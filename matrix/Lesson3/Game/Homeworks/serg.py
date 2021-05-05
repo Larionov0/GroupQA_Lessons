@@ -19,9 +19,6 @@ animals = [
     ['kurka', 'Marusya', 3, [5, 6], 'k'],
 ]
 
-system('cls')
-step = int(input('Какая будет скорость у героя: '))
-
 
 round_ = 1
 while True:
@@ -46,32 +43,35 @@ while True:
             text += str(el) + ' '
         print(text[:-1] + '|')
 
+    print(hero_coords)
+
     # все ходят
     # герой делает ход
     print("Герой", hero_name)
     print("Детали:", hero_details)
     print('wasd - ходить')
+    step = int(input('Кол-во шагов:  '))
     choice = input('Ваш выбор: ')
 
-    _ = 0
-    while _ < step:
-        if choice == 'w':
-            if hero_coords[0] != 0:
-                hero_coords[0] -= 1
-        elif choice == 'a':
-            if hero_coords[1] == 0:
-                hero_coords[1] = M - 1
-            else:
-                hero_coords[1] -= 1
-        elif choice == 's':
-            if hero_coords[0] != N - 1:
-                hero_coords[0] += 1
-        elif choice == 'd':
-            if hero_coords[1] == M - 1:
-                hero_coords[1] = 0
-            else:
-                hero_coords[1] += 1
-        _ += 1
+
+    if choice == 'w':
+        if hero_coords[0] != 0:
+            hero_coords[0] -= 1*step
+    elif choice == 'a':
+        if hero_coords[1] == 0:
+            hero_coords[1] = M - 1
+        else:
+            hero_coords[1] -= 1*step
+    elif choice == 's':
+        if hero_coords[0] != N - 1:
+            hero_coords[0] += 1*step
+    elif choice == 'd':
+        if hero_coords[1] == M - 1:
+            hero_coords[1] = 0
+        else:
+            hero_coords[1] += 1*step
+    else:
+        print('Такого варианта нету :(')
 
     # не поймал ли курицу
     caught_kurkas = []
