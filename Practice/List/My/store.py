@@ -35,9 +35,10 @@ while True:
         pass
     elif choice == '5':
         print('Все продукты:\n')
-        print('Имя | Стоимость | Количество | Производитель')
+        print('|%-15s|%-15s|%-15s|%-15s|' % ('Название', "Цена", "Количество", "Производитель"))
         for product in products:
-            print(product[0], "|", product[1], "|", product[2], '|', product[3])
+            # print(product[0], "|", product[1], "|", product[2], '|', product[3])
+            print('|%-15s|%-15.2f|%-15i|%-15i|' % (product[0], product[1], product[2], product[3]))
         print('-' * 40)
     elif choice == '6':
         print('\n\nВыберите продукт:')
@@ -88,7 +89,7 @@ while True:
                 elif choice == '5':
                     break
 
-    elif choice == '6':
+    elif choice == '7':
         pass
     else:
         pass
