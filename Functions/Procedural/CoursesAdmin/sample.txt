@@ -1,0 +1,2 @@
+name              |surname        |balance        |
+bob               |bobenko        |100            |
