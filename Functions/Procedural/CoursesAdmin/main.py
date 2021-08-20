@@ -23,20 +23,17 @@ courses = [
     {
         'name': 'C bases',
         'description': 'best C course',
-        'teacher_price': 200,
-        'client_price': 300
+        'payment_koef': 200
     },
     {
         'name': 'Python bases',
         'description': 'best Py course',
-        'teacher_price': 300,
-        'client_price': 400
+        'payment_koef': 300,
     },
     {
         'name': 'Math',
         'description': 'best C course',
-        'teacher_price': 100,
-        'client_price': 200
+        'payment_koef': 100,
     },
 ]
 
@@ -45,7 +42,8 @@ teachers = [
         'name': 'Teacher',
         'surname': 'Bober',
         'courses': [courses[0], courses[1]],
-        'master_koef': 2
+        'master_koef': 2,
+        'salary': 0
     }
 ]
 
@@ -53,7 +51,7 @@ groups = [
     {
         'number': 1,
         'students': [clients[0], clients[1]],
-        'teacher': None,
+        'teacher': teachers[0],
         'course': courses[0]
     }
 ]
@@ -133,13 +131,9 @@ courses_columns = [
         'type': 'str'
     },
     {
-        'name': 'teacher_price',
+        'name': 'payment_koef',
         'type': 'int'
-    },
-    {
-        'name': 'client_price',
-        'type': 'int'
-    },
+    }
 ]
 
 
@@ -192,6 +186,14 @@ groups_columns = [
         'main_field': 'name'
     },
 ]
+
+
+def calculate_teacher_salary_for_lesson(lesson):
+    return lesson['group']['course']['payment_koef'] * (len(lesson['group']['students'])) ** 0.5
+
+
+def calculate_clients_payment_for_lesson(lesson):
+    return lesson['group']['course']['payment_koef'] * 2 * (1 / len(lesson['group']['students']))
 
 
 def input_int(question, error_message='Вы ввели не число. Попробуйте еще.', stop_words=[]):
@@ -362,6 +364,85 @@ def work_with_objects_constructor_menu(object_name, data_list, columns, main_col
             pass
 
 
+def add_lesson(lessons, new_lesson):
+    lessons.append(new_lesson)
+    payment_value = calculate_clients_payment_for_lesson(new_lesson)
+    for client in new_lesson['group']['students']:
+        client['balance'] -= payment_value
+
+    teacher_salary = calculate_teacher_salary_for_lesson(new_lesson)
+    new_lesson['group']['teacher']['salary'] += teacher_salary
+
+
+def create_new_lesson_menu(lessons, group):
+    now = datetime.datetime.now()
+    new_lesson = {
+        'date': now.date(),
+        'time': now.time(),
+        'duration': datetime.timedelta(hours=1),
+        'present_students': [],
+        'theme': '',
+        'group': group
+    }
+    while True:
+        print('--= Редактируем урок =--\n'
+              f'{new_lesson}'
+              '1 - дата\n'
+              '2 - time\n'
+              '3 - duration\n'
+              '4 - present students\n'
+              '5 - theme\n'
+              '6 - save\n'
+              '0 - back\n')
+
+        choice = input('Ваш выбор: ')
+        if choice == '1':
+            pass
+        elif choice == '2':
+            pass
+        elif choice == '3':
+            hours = float(input('Hours: '))
+            new_lesson['duration'] = datetime.timedelta(hours=hours)
+        elif choice == '4':
+            pass
+        elif choice == '5':
+            new_lesson['name'] = input('New name: ')
+        elif choice == '6':
+            add_lesson(lessons, new_lesson)
+        elif choice == '0':
+            return
+
+
+def check_lesson_menu(lessons, group):
+    while True:
+        print(f'--= Уроки группы {group["number"]} =--\n'
+              f'1 - отметить новый урок\n'
+              f'2 - редактировать старые уроки\n'
+              f'0 - назад')
+        choice = input('Ваш выбор: ')
+        if choice == '0':
+            return
+        elif choice == '1':
+            create_new_lesson_menu(lessons, group)
+        elif choice == '2':
+            pass
+
+
+def choose_group_menu(lessons, groups):
+    print('0 - back')
+    n = 1
+    for group in groups:
+        print(f'{n} - {group["number"]} ({group["course"]["name"]})')
+        n += 1
+
+    choice = input_int('Ваш выбор:')
+    if choice == 0:
+        return
+    index = choice - 1
+    group = groups[index]
+    check_lesson_menu(lessons, group)
+
+
 def main_menu(clients, teachers, courses, groups, lessons):
     while True:
         print('---= Main menu =---\n'
@@ -369,7 +450,7 @@ def main_menu(clients, teachers, courses, groups, lessons):
               '2 - учителя\n'
               '3 - курсы\n'
               '4 - группы\n'
-              '5 - уроки')
+              '5 - отметить уроки')
 
         choice = input('Ваш выбор: ')
         if choice == '1':
@@ -381,80 +462,8 @@ def main_menu(clients, teachers, courses, groups, lessons):
         elif choice == '4':
             work_with_objects_constructor_menu('group', groups, groups_columns, 'number')
         elif choice == '5':
-            pass
+            choose_group_menu(lessons, groups)
 
 
-main_menu(clients, teachers, courses, groups, lessons)
-
-
-#
-# def edit_client_menu(client, clients):
-#     while True:
-#         print(f'---= Редактирование клиента =---\n'
-#               f'{client}\n\n'
-#               f'0 - назад\n'
-#               f'1 - имя\n'
-#               f'2 - фамилия\n'
-#               f'3 - баланс\n'
-#               f'4 - удалить')
-#         choice = input('Ваш выбор: ')
-#         if choice == '0':
-#             return
-#         elif choice == '1':
-#             client['name'] = input('New name: ')
-#         elif choice == '2':
-#             client['surname'] = input('New surname: ')
-#         elif choice == '3':
-#             client['balance'] = int(input('New balance'))
-#         elif choice == '4':
-#             clients.remove(client)
-#             return
-#
-#
-# def choose_client_menu(clients):
-#     print('0 - назад')
-#     n = 1
-#     for client in clients:
-#         print(f'{n} - {client["name"]} {client["surname"]}')
-#         n += 1
-#
-#     number = int(input('Ваш выбор: '))
-#     index = number - 1
-#
-#     client = clients[index]
-#     edit_client_menu(client, clients)
-#
-#
-# def create_client_menu(clients):
-#     new_client = {
-#         'name': '',
-#         'surname': '',
-#         'balance': ''
-#     }
-#     clients.append(new_client)
-#     edit_client_menu(new_client, clients)
-#
-#
-# def clients_menu(clients, groups, lessons):
-#     while True:
-#         print('---= Clients menu =---\n'
-#               '0 - назад\n'
-#               '1 - просмотреть клиентов\n'
-#               '2 - редактировать клиента\n'
-#               '3 - создать клиента')
-#         choice = input('Что будем делать: ')
-#         if choice == '0':
-#             return
-#         elif choice == '1':
-#             pass
-#         elif choice == '2':
-#             choose_client_menu(clients)
-#
-#         elif choice == '3':
-#             create_client_menu(clients)
-#
-#
-
-#
-#
-# main_menu(clients, teachers, courses, groups, lessons)
+if __name__ == '__main__':
+    main_menu(clients, teachers, courses, groups, lessons)
