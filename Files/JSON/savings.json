@@ -1,0 +1,22 @@
+[
+    {
+        "name": "Barcelona",
+        "total_cost": 120495091,
+        "players_amount": 35,
+        "city": "Barcelona",
+        "uniform_colors": [
+            "blue-red-black",
+            "pink-blank"
+        ]
+    },
+    {
+        "name": "colchester city",
+        "total_cost": 120591096,
+        "players_amount": 45,
+        "city": "Manchester",
+        "uniform_colors": [
+            "blue-white-black",
+            "pink"
+        ]
+    }
+]
