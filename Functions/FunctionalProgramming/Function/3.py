@@ -1,0 +1,4 @@
+p = print
+
+
+p('Hello')
