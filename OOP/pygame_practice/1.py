@@ -8,18 +8,43 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-
 WIDTH = 800
 HEIGHT = 500
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
-x = 300
-y = 200
+FPS = 60
+
+
+class Hero:
+    def __init__(self, name, x, y, speed, radius=30, color=BLUE):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.speed = speed
+        self.radius = radius
+        self.color = color
+
+    def update(self, x_dir, y_dir):
+        """
+        Метод, который будет вызываться на каждой итерации основного цикла программы
+        """
+        self.x += x_dir * self.speed
+        self.y += y_dir * self.speed
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
+
+
+screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
 x_dir = 0
 y_dir = 0
 
-speed = 5
+heroes = [
+    Hero('Bob', 350, 300, 10, 50, BLUE),
+    Hero('Bob', 350, 300, 7, 80, (0, 100, 255)),
+    Hero('Bob', 350, 300, 5, 100, (0, 150, 200)),
+]
+heroes.reverse()
 
 clock = pygame.time.Clock()
 while True:
@@ -54,11 +79,13 @@ while True:
                 elif direction == 'd':
                     x_dir = 0
 
-    x += x_dir * speed
-    y += y_dir * speed
-
     screen.fill(WHITE)
-    pygame.draw.circle(screen, BLUE, (x, y), 30)
-    pygame.display.flip()
 
-    clock.tick(60)
+    for hero in heroes:
+        hero.update(x_dir, y_dir)
+
+    for hero in heroes:
+        hero.draw(screen)
+
+    pygame.display.flip()
+    clock.tick(FPS)

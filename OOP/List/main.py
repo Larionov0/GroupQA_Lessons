@@ -56,6 +56,30 @@ class List:
                 l += 1
                 node = node.next
 
+    def pop(self, index):
+        if index == 0:
+            pass
+        elif index == len(self) - 1:
+            pass
+        elif index > len(self) - 1:
+            raise Exception('Слишком большой индекс')
+        else:
+            node = self.head
+            cur_i = 0
+            while True:
+                if cur_i == index:
+                    break
+                node = node.next
+                cur_i += 1
+
+            left = node.prev
+            right = node.next
+
+            left.next = right
+            right.prev = left
+
+            return node.value
+
 
 # n1 = Node(None, None, 'a')
 # n2 = Node(None, None, 'b')
@@ -83,9 +107,9 @@ lst = List()
 lst.append('a')
 lst.append('b')
 lst.append('c')
+lst.append('d')
 
+deleted = lst.pop(12)
 
-i = 0
-while i < len(lst):
-    print(lst[i])
-    i += 1
+print(lst)
+print(deleted)
