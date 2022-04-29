@@ -1,81 +1,38 @@
 import telebot
 from misc import TOKEN
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from classes.user import User
+from classes.lobby import Lobby
 
 
 # Можем использовать эти переменные как глобальные
 bot = telebot.TeleBot(TOKEN)
-users = []
-
-
-class User:
-    def __init__(self, chat_id, username='new user', gold=0):
-        self.chat_id = chat_id
-        self.username = username
-        self.gold = gold
-        self.message_id = None  # последнее сообщение от бота юзеру
-        self._help_message = ''  # для доп информации в текущей меню (любой, где это нужно)
-
-    def clear_help_message(self):
-        self._help_message = ''
-
-    @property
-    def help_message(self):
-        msg = self._help_message
-        self.clear_help_message()
-        return msg
-
-    @help_message.setter
-    def help_message(self, text):  # obj.help_message = 'afsdgf'
-        self._help_message = text
-
-    def try_to_save_my_message(self, message):
-        if self.message_id is None:
-            self.message_id = message.message_id
-
-    def delete_last_message(self):
-        if self.message_id:
-            bot.delete_message(self.chat_id, self.message_id)
-
-    def delete_my_message(self, message):
-        bot.delete_message(self.chat_id, message.message_id)
-
-    def resend_message(self, text, reply_markup=None):
-        self.delete_last_message()
-        message = bot.send_message(self.chat_id, text, reply_markup=reply_markup)
-        self.message_id = message.message_id
-
-    @classmethod
-    def create_user(cls, chat_id):
-        user = User(chat_id)
-        users.append(user)
-        return user
-
-    @classmethod
-    def find_user(cls, chat_id) -> 'User':
-        for user in users:
-            if user.chat_id == chat_id:
-                return user
-
-        # не нашли -> нужно создать
-        user = cls.create_user(chat_id)
-        return user
-
-    @classmethod
-    def find_user_from_message(cls, message):
-        return cls.find_user(message.chat.id)
-
-    @classmethod
-    def find_user_and_delete_message(cls, message):
-        user = cls.find_user_from_message(message)
-        user.delete_my_message(message)
-        return user
+Lobby.lobbies.append(Lobby('первое лобби'))
+Lobby.lobbies.append(Lobby('второе лобби'))
 
 
 @bot.message_handler(content_types=['text'])
 def text_handler(message):
-    user = User.find_user_and_delete_message(message)
+    user = User.find_user_and_delete_message(message, bot)
     main_menu(user)
+
+
+@bot.callback_query_handler(lambda call: True)
+def inline_button_handler(call):  # ПРИ НАЖАТИИ НА ИНЛАЙН КНОПОЧКУ
+    user = User.find_user_from_message(call.message, bot)
+    bot.answer_callback_query(call.id)
+
+    if call.data == 'back':
+        return main_menu(user)
+
+    lobby = Lobby.find_lobby(call.data)
+    result = lobby.enter(user)
+
+    if result:
+        for user in lobby.users:
+            lobby_menu(user)
+    else:
+        user.resend_message('Не удалось войти, так как лобби заполнено')
 
 
 def main_menu(user):
@@ -88,10 +45,10 @@ def main_menu(user):
 
 
 def main_handler(message):
-    user = User.find_user_and_delete_message(message)
+    user = User.find_user_and_delete_message(message, bot)
     text = message.text.lower()
     if 'играть' in text:
-        pass
+        lobbies_menu(user)
     elif 'настройки аккаунта' in text:
         account_settings_menu(user)
 
@@ -109,7 +66,7 @@ def account_settings_menu(user):
 
 
 def account_settings_handler(message):
-    user = User.find_user_and_delete_message(message)
+    user = User.find_user_and_delete_message(message, bot)
     text = message.text.lower()
     if 'изменить никнейм' in text:
         user.resend_message('Введите новый никнейм:')
@@ -119,7 +76,7 @@ def account_settings_handler(message):
 
 
 def new_nickname_handler(message):
-    user = User.find_user_and_delete_message(message)
+    user = User.find_user_and_delete_message(message, bot)
     new_nickname = message.text
     if 6 <= len(new_nickname) <= 20 and ' ' not in new_nickname:
         user.username = new_nickname
@@ -128,6 +85,35 @@ def new_nickname_handler(message):
     else:
         user.help_message = 'Никнейм не принят'
         account_settings_menu(user)
+
+
+def lobbies_menu(user):
+    keyboard = InlineKeyboardMarkup()
+    for lobby in Lobby.lobbies:
+        keyboard.row(InlineKeyboardButton(str(lobby), callback_data=lobby.name))
+    keyboard.row(InlineKeyboardButton('назад', callback_data='back'))
+    user.resend_message('--= Лобби =--', keyboard)
+
+
+def lobby_menu(main_user):
+    text = f'---= Лобби {main_user.lobby.name} =---\n'
+    for user in main_user.lobby.users:
+        text += f"- {user.username}\n"
+    keyboard = ReplyKeyboardMarkup(one_time_keyboard=True)
+    keyboard.row(KeyboardButton('выход'))
+    main_user.resend_message(text, keyboard)
+    bot.register_next_step_handler_by_chat_id(user.chat_id, lobby_menu_handler)
+
+
+def lobby_menu_handler(message):
+    user = User.find_user_and_delete_message(message, bot)
+    if message.text == 'выход':
+        user.exit_lobby()
+        lobby_menu(user)
+
+
+def test_handler(call):
+    print(call)
 
 
 bot.polling()
