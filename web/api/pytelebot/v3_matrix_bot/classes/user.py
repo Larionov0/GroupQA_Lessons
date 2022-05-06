@@ -40,7 +40,7 @@ class User:
 
     def resend_message(self, text, reply_markup=None):
         self.delete_last_message()
-        message = self.bot.send_message(self.chat_id, text, reply_markup=reply_markup)
+        message = self.bot.send_message(self.chat_id, text, reply_markup=reply_markup, parse_mode='markdown')
         self.message_id = message.message_id
 
     @classmethod

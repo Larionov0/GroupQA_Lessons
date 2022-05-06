@@ -1,5 +1,7 @@
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from classes.user import User
+from config import MAX_I, MAX_J
+import random
 
 
 class Lobby:
@@ -39,8 +41,50 @@ class Lobby:
         else:
             user.resend_message('Не удалось войти, так как лобби заполнено')
 
+    def set_users_coords(self):
+        for user in self.users:
+            user.i = random.randint(0, MAX_I - 1)
+            user.j = random.randint(0, MAX_J - 1)
+
     def start_game(self):
-        pass
+        for user in self.users:
+            user.resend_message('Игра началась')
+
+        self.set_users_coords()
+        self.active_hero_index = 0
+
+        self.main_iter()
+
+    def create_matrix(self):
+        matrix = [['-' for j in range(MAX_J)] for i in range(MAX_I)]
+        for user in self.users:
+            matrix[user.i][user.j] = user.avatar
+        return matrix
+
+    def draw_matrix(self, matrix):
+        text = ''
+        for row in matrix:
+            text += '|'
+            for sprite in row:
+                text += sprite + ' '
+            text = text[:-1] + '|\n'
+        return text
+
+    def game_menu(self, i, user):
+        text = self.draw_matrix(self.create_matrix())
+
+        if i == self.active_hero_index:
+            keyboard = ReplyKeyboardMarkup()
+            keyboard.row(KeyboardButton('_'), KeyboardButton('вверх'), KeyboardButton('_'))
+            keyboard.row(KeyboardButton('влево'), KeyboardButton('_'), KeyboardButton('вправо'))
+            keyboard.row(KeyboardButton('_'), KeyboardButton('вниз'), KeyboardButton('закончить'))
+        else:
+            keyboard = None
+        user.resend_message('```\n' + text + '\n```', keyboard)
+
+    def main_iter(self):
+        for i, user in enumerate(self.users):
+            self.game_menu(i, user)
 
     def lobby_menu(self, main_user):
         text = f'---= Лобби {main_user.lobby.name} =---\n'

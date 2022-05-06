@@ -7,6 +7,7 @@ from classes.lobby import Lobby
 
 # Можем использовать эти переменные как глобальные
 bot = telebot.TeleBot(TOKEN)
+# bot.send_message(123, '', parse_mode='')
 
 
 @bot.message_handler(content_types=['text'])
