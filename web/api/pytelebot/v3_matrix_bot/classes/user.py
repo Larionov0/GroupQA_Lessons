@@ -1,14 +1,18 @@
 class User:
     users = []
 
-    def __init__(self, bot, chat_id, username='new user', gold=0):
+    def __init__(self, bot, chat_id, username='new user', avatar='n', gold=0):
         self.bot = bot
         self.chat_id = chat_id
         self.username = username
+        self.avatar = avatar
         self.gold = gold
         self.message_id = None  # последнее сообщение от бота юзеру
         self._help_message = ''  # для доп информации в текущей меню (любой, где это нужно)
         self.lobby = None
+
+        self.i = None
+        self.j = None
 
     def clear_help_message(self):
         self._help_message = ''

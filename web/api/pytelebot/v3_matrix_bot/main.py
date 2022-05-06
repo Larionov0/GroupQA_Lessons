@@ -7,8 +7,6 @@ from classes.lobby import Lobby
 
 # Можем использовать эти переменные как глобальные
 bot = telebot.TeleBot(TOKEN)
-Lobby.lobbies.append(Lobby('первое лобби'))
-Lobby.lobbies.append(Lobby('второе лобби'))
 
 
 @bot.message_handler(content_types=['text'])
@@ -26,13 +24,7 @@ def inline_button_handler(call):  # ПРИ НАЖАТИИ НА ИНЛАЙН КН
         return main_menu(user)
 
     lobby = Lobby.find_lobby(call.data)
-    result = lobby.enter(user)
-
-    if result:
-        for user in lobby.users:
-            lobby_menu(user)
-    else:
-        user.resend_message('Не удалось войти, так как лобби заполнено')
+    lobby.enter(user)
 
 
 def main_menu(user):
@@ -56,10 +48,11 @@ def main_handler(message):
 def account_settings_menu(user):
     text = '--= Настройки аккаунта =--\n' \
            f'Ваш никнейм: {user.username}\n' \
+           f'Ваш аватар: {user.avatar}\n' \
            f'Ваше золото: {user.gold}\n\n' \
            f'{user.help_message}'
     keyboard = ReplyKeyboardMarkup(one_time_keyboard=True)
-    keyboard.row(KeyboardButton('Изменить никнейм'))
+    keyboard.row(KeyboardButton('Изменить никнейм'), KeyboardButton('Изменить аватар'))
     keyboard.row(KeyboardButton('Назад'))
     user.resend_message(text, keyboard)
     bot.register_next_step_handler_by_chat_id(user.chat_id, account_settings_handler)
@@ -71,14 +64,28 @@ def account_settings_handler(message):
     if 'изменить никнейм' in text:
         user.resend_message('Введите новый никнейм:')
         bot.register_next_step_handler_by_chat_id(user.chat_id, new_nickname_handler)
+    elif 'изменить аватар' in text:
+        user.resend_message('Введите новый аватар:')
+        bot.register_next_step_handler_by_chat_id(user.chat_id, new_avatar_handler)
     elif 'назад' in text:
         main_menu(user)
+
+
+def new_avatar_handler(message):
+    user = User.find_user_and_delete_message(message, bot)
+    new_avatar = message.text  # 'o'
+    if len(new_avatar) == 1 and new_avatar.isalpha():
+        user.avatar = new_avatar.lower()
+        account_settings_menu(user)
+    else:
+        user.help_message = 'Аватар должен быть 1 буквой.'
+        account_settings_menu(user)
 
 
 def new_nickname_handler(message):
     user = User.find_user_and_delete_message(message, bot)
     new_nickname = message.text
-    if 6 <= len(new_nickname) <= 20 and ' ' not in new_nickname:
+    if 3 <= len(new_nickname) <= 20 and ' ' not in new_nickname:
         user.username = new_nickname
         user.help_message = 'Никнейм обновлен'
         account_settings_menu(user)
@@ -95,25 +102,10 @@ def lobbies_menu(user):
     user.resend_message('--= Лобби =--', keyboard)
 
 
-def lobby_menu(main_user):
-    text = f'---= Лобби {main_user.lobby.name} =---\n'
-    for user in main_user.lobby.users:
-        text += f"- {user.username}\n"
-    keyboard = ReplyKeyboardMarkup(one_time_keyboard=True)
-    keyboard.row(KeyboardButton('выход'))
-    main_user.resend_message(text, keyboard)
-    bot.register_next_step_handler_by_chat_id(user.chat_id, lobby_menu_handler)
-
-
-def lobby_menu_handler(message):
-    user = User.find_user_and_delete_message(message, bot)
-    if message.text == 'выход':
-        user.exit_lobby()
-        lobby_menu(user)
-
-
 def test_handler(call):
     print(call)
 
 
+Lobby.lobbies.append(Lobby('первое лобби', bot, lobbies_menu=lobbies_menu))
+Lobby.lobbies.append(Lobby('второе лобби', bot, lobbies_menu=lobbies_menu))
 bot.polling()
