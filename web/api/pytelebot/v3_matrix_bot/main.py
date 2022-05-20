@@ -12,8 +12,12 @@ bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(content_types=['text'])
 def text_handler(message):
+    print('START')
     user = User.find_user_and_delete_message(message, bot)
-    main_menu(user)
+    if user.next_step_handler:
+        user.next_step_handler(message)
+    else:
+        main_menu(user)
 
 
 @bot.callback_query_handler(lambda call: True)
@@ -34,7 +38,7 @@ def main_menu(user):
     keyboard.row(KeyboardButton('Играть'), KeyboardButton('Магазин'))
     keyboard.row(KeyboardButton('Настройки аккаунта'))
     user.resend_message(text, keyboard)
-    bot.register_next_step_handler_by_chat_id(user.chat_id, main_handler)
+    user.register_next_step_handler(main_handler)
 
 
 def main_handler(message):
@@ -56,7 +60,7 @@ def account_settings_menu(user):
     keyboard.row(KeyboardButton('Изменить никнейм'), KeyboardButton('Изменить аватар'))
     keyboard.row(KeyboardButton('Назад'))
     user.resend_message(text, keyboard)
-    bot.register_next_step_handler_by_chat_id(user.chat_id, account_settings_handler)
+    user.register_next_step_handler(account_settings_handler)
 
 
 def account_settings_handler(message):
@@ -64,10 +68,10 @@ def account_settings_handler(message):
     text = message.text.lower()
     if 'изменить никнейм' in text:
         user.resend_message('Введите новый никнейм:')
-        bot.register_next_step_handler_by_chat_id(user.chat_id, new_nickname_handler)
+        user.register_next_step_handler(new_nickname_handler)
     elif 'изменить аватар' in text:
         user.resend_message('Введите новый аватар:')
-        bot.register_next_step_handler_by_chat_id(user.chat_id, new_avatar_handler)
+        user.register_next_step_handler(new_avatar_handler)
     elif 'назад' in text:
         main_menu(user)
 
@@ -109,4 +113,5 @@ def test_handler(call):
 
 Lobby.lobbies.append(Lobby('первое лобби', bot, lobbies_menu=lobbies_menu))
 Lobby.lobbies.append(Lobby('второе лобби', bot, lobbies_menu=lobbies_menu))
+Lobby.lobbies.append(Lobby('третье лобби', bot, lobbies_menu=lobbies_menu, max_players=3))
 bot.polling()

@@ -2,6 +2,7 @@ from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from classes.user import User
 from config import MAX_I, MAX_J
 import random
+import datetime
 
 
 class Lobby:
@@ -47,8 +48,8 @@ class Lobby:
             user.j = random.randint(0, MAX_J - 1)
 
     def start_game(self):
-        for user in self.users:
-            user.resend_message('Игра началась')
+        # for user in self.users:
+        #     user.resend_message('Игра началась')
 
         self.set_users_coords()
         self.active_hero_index = 0
@@ -81,6 +82,23 @@ class Lobby:
         else:
             keyboard = None
         user.resend_message('```\n' + text + '\n```', keyboard)
+        user.register_next_step_handler(self.game_menu_handler)
+
+    def game_menu_handler(self, message):
+        print(f"{datetime.datetime.now().time()}: Handler call: {message.text} ")
+        user = User.find_user_and_delete_message(message, self.bot)
+        if self.users.index(user) == self.active_hero_index:
+            if message.text in ['вверх', 'вниз', 'влево', 'вправо']:
+                user.move(message.text)
+                self.main_iter()
+            elif message.text.lower() == 'закончить':
+                self.end_turn()
+
+    def end_turn(self):
+        self.active_hero_index += 1
+        if self.active_hero_index == len(self.users):
+            self.active_hero_index = 0
+        self.main_iter()
 
     def main_iter(self):
         for i, user in enumerate(self.users):
@@ -93,7 +111,7 @@ class Lobby:
         keyboard = ReplyKeyboardMarkup(one_time_keyboard=True)
         keyboard.row(KeyboardButton('выход'))
         main_user.resend_message(text, keyboard)
-        self.bot.register_next_step_handler_by_chat_id(main_user.chat_id, self.lobby_menu_handler)
+        main_user.register_next_step_handler(self.lobby_menu_handler)
 
     def lobby_menu_handler(self, message):
         user = User.find_user_and_delete_message(message, self.bot)

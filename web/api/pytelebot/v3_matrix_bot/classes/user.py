@@ -1,3 +1,7 @@
+from time import sleep
+from config import MAX_I, MAX_J
+
+
 class User:
     users = []
 
@@ -11,8 +15,13 @@ class User:
         self._help_message = ''  # для доп информации в текущей меню (любой, где это нужно)
         self.lobby = None
 
+        self.next_step_handler = None
+
         self.i = None
         self.j = None
+
+    def register_next_step_handler(self, handler):
+        self.next_step_handler = handler
 
     def clear_help_message(self):
         self._help_message = ''
@@ -32,11 +41,19 @@ class User:
             self.message_id = message.message_id
 
     def delete_last_message(self):
-        if self.message_id:
-            self.bot.delete_message(self.chat_id, self.message_id)
+        try:
+            if self.message_id:
+                self.bot.delete_message(self.chat_id, self.message_id)
+        except Exception as exc:
+            return
+            print(f'EXCEPTION1: {exc}')
 
     def delete_my_message(self, message):
-        self.bot.delete_message(self.chat_id, message.message_id)
+        try:
+            self.bot.delete_message(self.chat_id, message.message_id)
+        except Exception as exc:
+            return
+            print(f'EXCEPTION2: {exc}')
 
     def resend_message(self, text, reply_markup=None):
         self.delete_last_message()
@@ -73,3 +90,17 @@ class User:
         if self.lobby:
             self.lobby.users.remove(self)
             self.lobby = None
+
+    def move(self, dir):
+        if dir == 'вверх':
+            if self.i != 0:
+                self.i -= 1
+        elif dir == 'вправо':
+            if self.j != MAX_J - 1:
+                self.j += 1
+        elif dir == 'вниз':
+            if self.i != MAX_I - 1:
+                self.i += 1
+        elif dir == 'влево':
+            if self.j != 0:
+                self.j -= 1
