@@ -18,11 +18,13 @@ CREATE TABLE Cart (
 
 
 CREATE TABLE User_ (
-    id INT PRIMARY KEY,
+    id INT PRIMARY KEY,  -- chat_id
     username VARCHAR(20),
-    phone VARCHAR(20),
-    email VARCHAR(30),
-    cur_cart_id INT NULL REFERENCES Cart(id)
+    phone VARCHAR(20) NULL,
+    email VARCHAR(30) NULL,
+    cur_cart_id INT NULL REFERENCES Cart(id),
+    bot_message_id INT NULL,
+    next_message_handler INT NULL -- index of handler in list
 );
 
 
