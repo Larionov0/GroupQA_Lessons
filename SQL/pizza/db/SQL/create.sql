@@ -26,7 +26,10 @@ CREATE TABLE User_ (
     email VARCHAR(30) NULL,
     cur_cart_id INT NULL REFERENCES Cart(id),
     bot_message_id INT NULL,
-    next_message_handler INT NULL -- index of handler in list
+    next_message_handler INT NULL, -- index of handler in list
+    cur_pizza_id INT NULL,
+    cur_chosen_size INT DEFAULT 2,
+    cur_chosen_side INT DEFAULT 1
 );
 
 

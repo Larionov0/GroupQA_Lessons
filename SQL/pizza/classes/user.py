@@ -1,12 +1,15 @@
 from db.db import connect
 from business_handlers import HANDLERS
+from tools.pizza_sizes import pizza_sizes
 
 
 class User:
     table = 'User_'
-    columns = ['id', 'username', 'phone', 'email', 'cur_cart_id', 'bot_message_id', 'next_message_handler']
+    columns = ['id', 'username', 'phone', 'email', 'cur_cart_id', 'bot_message_id', 'next_message_handler',
+               'cur_pizza_id', 'cur_chosen_size', 'cur_chosen_side']
 
-    def __init__(self, bot, id, username, phone, email, cur_cart_id, bot_message_id, next_message_handler):
+    def __init__(self, bot, id, username, phone, email, cur_cart_id, bot_message_id, next_message_handler, cur_pizza_id,
+                 cur_chosen_size, cur_chosen_side):
         self.bot = bot
         self.id = id
         self.username = username
@@ -15,6 +18,13 @@ class User:
         self.cur_cart_id = cur_cart_id
         self.bot_message_id = bot_message_id
         self.next_message_handler = next_message_handler  # index of handler in list
+        self.cur_pizza_id = cur_pizza_id
+        self.cur_chosen_size = cur_chosen_size
+        self.cur_chosen_side = cur_chosen_side
+
+    @property
+    def cur_chosen_size_name(self):
+        return pizza_sizes[int(self.cur_chosen_size)]
 
     def save_username(self, new_username):
         self.username = new_username
