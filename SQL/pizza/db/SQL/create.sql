@@ -1,24 +1,26 @@
 CREATE TABLE Ingredient (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name VARCHAR(30),
     price FLOAT
 );
 
 
 CREATE TABLE Pizza (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name VARCHAR(20),
-    is_custom BOOLEAN
+    is_custom BOOLEAN,
+    is_proto BOOLEAN,
+    size INT
 );
 
 
 CREATE TABLE Cart (
-    id INT PRIMARY KEY
+    id INTEGER PRIMARY KEY
 );
 
 
 CREATE TABLE User_ (
-    id INT PRIMARY KEY,  -- chat_id
+    id INTEGER PRIMARY KEY,  -- chat_id
     username VARCHAR(20),
     phone VARCHAR(20) NULL,
     email VARCHAR(30) NULL,
@@ -37,14 +39,14 @@ CREATE TABLE IngredientInPizza (
 
 
 CREATE TABLE PizzaCart (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     cart_id INT REFERENCES Cart(id),
     pizza_id INT REFERENCES Pizza(id)
 );
 
 
 CREATE TABLE Orders (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     datetime TIMESTAMP CURRENT_TIMESTAMP,
     price FLOAT,
     address VARCHAR(50),
