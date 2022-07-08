@@ -93,3 +93,12 @@ class User:
         cursor.execute(query)
         conn.commit()
         self.bot_message_id = bot_message_id
+
+    def recreate_cart(self):
+        conn, cursor = connect()
+        cursor.execute(f"INSERT INTO Cart DEFAULT VALUES")
+        conn.commit()
+        self.cur_cart_id = cursor.lastrowid
+        cursor.execute(f"UPDATE {self.table} SET cur_cart_id = {self.cur_cart_id} WHERE id={self.id}")
+        conn.commit()
+        # TODO : удаление прошлой корзины

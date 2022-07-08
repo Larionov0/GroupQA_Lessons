@@ -18,7 +18,7 @@ def main_menu(user):
 
 def main_menu_handler(user, data):
     menus = {
-        'order_pizza': choose_pizza_menu,
+        'order_pizza': before_choose_pizza_menu,
         'history': history_menu,
         'account': account_menu
     }
@@ -63,12 +63,49 @@ def phone_change_menu(user):
     pass
 
 
-def choose_pizza_menu(user):
+def before_choose_pizza_menu(user):
+    user.recreate_cart()
+    choose_pizza_menu(user)
+
+
+def create_cart_text(user):
     conn, cursor = connect()
+    # Достаем пиццы из корзины пользователя
+    query = f"SELECT Pizza.id, Pizza.name, Ingredient.name, Pizza.size FROM User_ " \
+            f"JOIN Cart ON User_.cur_cart_id=Cart.id " \
+            f"JOIN PizzaCart ON Cart.id = PizzaCart.cart_id " \
+            f"JOIN Pizza ON PizzaCart.pizza_id = Pizza.id " \
+            f"JOIN IngredientInPizza On Pizza.id = IngredientInPizza.pizza_id " \
+            f"JOIN Ingredient ON IngredientInPizza.ingredient_id = Ingredient.id " \
+            f"WHERE User_.id = {user.id} " \
+            f"ORDER BY Pizza.id"
+    cursor.execute(query)
+    table = cursor.fetchall()
+
+    last_pizza_id = None
+    cart_text = ''
+    text = ''
+    for row in table + [(-10, '', '', 1)]:
+        if row[0] != last_pizza_id:
+            if last_pizza_id is not None:
+                cart_text += text[:-2] + ')\n'
+
+            text = row[1] + f' {pizza_sizes[int(row[3])]} ('
+            last_pizza_id = row[0]
+
+        text += row[2] + ', '
+    return cart_text, conn, cursor
+
+
+def choose_pizza_menu(user):
+    cart_text, conn, cursor = create_cart_text(user)
+
+    # Достаем все прото пиццы
     query = "SELECT Pizza.id, Pizza.name, Ingredient.name\n" \
             "FROM Pizza \n" \
             "JOIN IngredientInPizza ON Pizza.id = IngredientInPizza.pizza_id\n" \
             "JOIN Ingredient ON Ingredient.id = IngredientInPizza.ingredient_id\n" \
+            "WHERE Pizza.is_proto = 1\n" \
             "ORDER BY Pizza.id"
     cursor.execute(query)
     table = cursor.fetchall()
@@ -86,8 +123,10 @@ def choose_pizza_menu(user):
 
         text += row[2] + ', '
 
+    keyboard.row(InlineKeyboardButton('Конструктор піцци', 'constructor'))
+    keyboard.row(InlineKeyboardButton('Корзина', 'cart'), InlineKeyboardButton('Оформити замовлення', 'order'))
     keyboard.row(InlineKeyboardButton('Назад', callback_data='back'))
-    user.send_message('Виберіть піцу:', keyboard)
+    user.send_message(f'Ваша корзина:\n{cart_text}\n\nВиберіть піцу:', keyboard)
     user.save_next_message_handler(choose_pizza_menu_handler)
 
 
@@ -95,9 +134,13 @@ def choose_pizza_menu_handler(user, data):
     if data == 'back':
         return main_menu(user)
 
+    if data == 'order':
+        return order_menu(user)
+
     conn, cursor = connect()
     cursor.execute(f"UPDATE User_ SET cur_pizza_id=? WHERE id={user.id}", (data,))
     conn.commit()
+    user.cur_pizza_id = data
     choose_pizza_size_menu(user, data)
 
 
@@ -128,13 +171,31 @@ def choose_pizza_size_menu(user, pizza_id):
     user.save_next_message_handler(choose_pizza_size_menu_handler)
 
 
+def add_pizza_to_cart(user):
+    query = f"INSERT INTO Pizza (name, is_custom, is_proto, size) " \
+            f"SELECT name, is_custom, 0, {user.cur_chosen_size} FROM Pizza WHERE id={user.cur_pizza_id};"
+    conn, cursor = connect()
+    cursor.execute(query)
+    conn.commit()
+    pizza_copy_id = cursor.lastrowid
+
+    query = f"INSERT INTO IngredientInPizza (ingredient_id, pizza_id, grams) " \
+            f"SELECT ingredient_id, {pizza_copy_id}, grams FROM IngredientInPizza WHERE pizza_id={user.cur_pizza_id};"
+    cursor.execute(query)
+    conn.commit()
+
+    cursor.execute(f"INSERT INTO PizzaCart (cart_id, pizza_id) VALUES ({user.cur_cart_id}, {pizza_copy_id})")
+    conn.commit()
+
+
 def choose_pizza_size_menu_handler(user, data):
     conn, cursor = connect()
 
     if data == 'cancel':
         return choose_pizza_menu(user)
     if data == 'add':
-        return
+        add_pizza_to_cart(user)
+        return choose_pizza_menu(user)
 
     if data[0] == 's':
         new_size = data[1]
@@ -142,6 +203,12 @@ def choose_pizza_size_menu_handler(user, data):
         conn.commit()
         user.cur_chosen_size = new_size
         choose_pizza_size_menu(user, user.cur_pizza_id)
+
+
+def order_menu(user):
+    cart_text, conn, cursor = create_cart_text(user)
+
+    text = f'Ваша корзина:\n{cart_text}'
 
 
 def history_menu(user):

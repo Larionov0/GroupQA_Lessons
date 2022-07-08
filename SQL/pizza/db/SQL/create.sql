@@ -42,9 +42,9 @@ CREATE TABLE IngredientInPizza (
 
 
 CREATE TABLE PizzaCart (
-    id INTEGER PRIMARY KEY,
     cart_id INT REFERENCES Cart(id),
-    pizza_id INT REFERENCES Pizza(id)
+    pizza_id INT REFERENCES Pizza(id),
+    PRIMARY KEY (cart_id, pizza_id)
 );
 
 
