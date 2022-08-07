@@ -1,0 +1,66 @@
+body {
+    height: 1289px;
+    margin: 0px;
+    padding: 0px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+
+#up_panel {
+    height: 6%;
+    width: 100%;
+    background-color: rgb(127, 196, 131);
+}
+
+
+#content {
+    height: 94%;
+    background-color: rgba(0, 255, 255, 0.452);
+    display: flex;
+    flex-direction: row;
+}
+
+#chats_panel {
+    width: 25%;
+    height: 100%;
+    background-color: rgba(0, 0, 255, 0.137);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1% 0%;
+}
+
+#chat_panel {
+    width: 75%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0.158);
+}
+
+
+.chat_shortcut {
+    height: 10%;
+    width: 90%;
+    margin: 2% 0%;
+    background-color: rgba(137, 43, 226, 0.308);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 20px;
+    padding: 2%;
+}
+
+.chat_shortcut img {
+    width: 20%;
+    height: 90%;
+    border-radius: 40px;
+    margin-right: 4%;
+}
+
+.chat_shortcut p {
+    width: 76%;
+    height: 70%;
+    background-color: rgba(255, 255, 255, 0.199);
+    font-size: 18px;
+    padding: 2% 2%;
+    border-radius: 10px;
+}

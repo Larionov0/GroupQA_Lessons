@@ -1,0 +1,27 @@
+p {
+    font-size: 10px;
+}
+
+#main_header {
+    background-color: aqua;
+}
+
+#header_row {
+    background-color: yellow;
+    font-weight: bold;
+}
+
+table {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 5px;
+    border: 1px solid black;
+}
+
+#first_img {
+    width: 300px;
+    border-radius: 10px;
+}
