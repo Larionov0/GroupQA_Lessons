@@ -1,0 +1,101 @@
+body {
+    background-color: rgb(200, 200, 231);
+    width: 1900px;
+    height: 900px;
+    display: flex;
+    flex-direction: column;
+}
+
+#header {    
+    
+    background-color: rgb(129, 129, 129);
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    height: 10%;
+}
+
+#content {
+    margin: 0;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    height: 80%;
+    display: flex;
+    flex-direction: row;
+}
+
+#left_content {
+    width: 33%;
+    height: 100%;
+    background-color: rgb(162, 143, 180);
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+#center_content {
+    width: 33%;
+    height: 100%;
+    background-color: azure;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+#right_content {
+    width: 33%;
+    height: 100%;
+    background-color: blanchedalmond;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+#footer {
+    background-color: aliceblue;
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    height: 10%;
+}
+
+#calculator {
+    background-color: rgb(117, 130, 134);
+    border-radius: 20px;
+    border: 1px solid black;
+    width: 50%;
+    height: 50%;
+    margin: 5% 25%;
+}
+
+#screen {
+    background-color: white;
+    border-radius: 10px;
+    border: 1px solid black;
+    width: 90%;
+    height: 10%;
+    margin: 3% 5%;
+
+}
+
+#keyboard {
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 90%;
+    height: 80%;
+    margin: 0 5%;
+    display: flex;
+    flex-direction: column;
+}
+
+#keyboard div {
+    width: 98%;
+    height: 15%;
+    margin: 2% 1%;
+}
+
+#keyboard div button{
+    /* border-radius: 20px;
+    background-color: rgb(185, 187, 90); */
+    width: 20%;
+    margin: 3% 2.5%;
+}

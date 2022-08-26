@@ -1,0 +1,45 @@
+/* :root {
+    --w: 50px;
+    --h: 30px;
+} */
+
+
+body {
+    margin: 0px;
+    padding: 0px
+}
+
+#content {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+#map {
+    width: 80%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#ui_panel {
+    width: 20%;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    height: var(--h);
+}
+
+.cell {
+    width: calc(var(--w) - 0.08%);
+    height: 98%;
+}
+
+.sprite {
+    height: 100%;
+    width: 100%;
+    display: block;
+    border-radius: 5px;
+}
