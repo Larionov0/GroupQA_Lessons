@@ -1,6 +1,17 @@
 var GRASS_SRC = 'https://art.pixilart.com/02aa0790086f91a.png'
 
 
+function randomNumber(min, max) { 
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+} 
+
+Array.prototype.random_choice = function(){
+    return this[randomNumber(0, this.length - 1)]
+}
+
+
 class Creature {
     constructor (i, j, hp, sprite_src){
         this.i = i
@@ -9,6 +20,7 @@ class Creature {
         this.max_hp = hp
         this.is_alive = true
         this.sprite_src = sprite_src
+        this.is_alive = true
     }
 
     get_damage(){
@@ -16,6 +28,8 @@ class Creature {
     }
 
     move(dir, world){
+        if (this instanceof Hero)
+            debugger
         switch (dir) {
             case 'w':
                 if (this.i != 0) this.i -= 1
@@ -37,18 +51,53 @@ class Creature {
                 break;
         }
     }
+
+    die (){
+        this.is_alive = false
+    }
+}
+
+
+class Animal extends Creature {
+    my_turn(world){
+        throw {name : "NotImplementedError", message : "too lazy to implement"}; 
+    }
 }
 
 
 class Hero extends Creature {
-    constructor (name, i, j, hp=10, main_weapon=null, coins=0){
+    constructor (name, i, j, hp=10, main_weapon=null, points=0){
         super(i, j, hp, 'https://tokegameart.net/wp-content/uploads/2018/03/01-Cool-Boy-2D-Game-Character-Sprite.png')
         this.name = name
         this.main_weapon = main_weapon
-        this.coins = coins
+        this.points = points
         this.inventory = []
     }
 
+    update(key, world){
+        this.move(key, world)
+        for (let animal of world.alive_animals){
+            if (animal instanceof Chicken){
+                if (this.i == animal.i & this.j == animal.j){
+                    animal.die()
+                    this.points += 1
+                }
+            }
+        }
+        world.drawer.draw_html()
+    }
+}
+
+
+class Chicken extends Animal {
+    constructor (i, j, name='new'){
+        super(i, j, 3, 'https://media1.giphy.com/media/l3vR9IEU6nYAmZyoM/giphy.gif')
+        this.name = name
+    }
+
+    my_turn(world){
+        this.move(['w', 'a', 's', 'd'].random_choice(), world)
+    }
 }
 
 
@@ -63,12 +112,17 @@ class Setupper{
         })
     }
 
+    setup_interval(){
+        setInterval(()=>{this.world.update()}, 500)
+    }
+
     setup(){
         var r = document.querySelector(':root');
         r.style.setProperty('--w', `${100 / this.world.m}%`)
         r.style.setProperty('--h', `${100 / this.world.n}%`)
 
         this.setup_listeners()
+        this.setup_interval()
     }
 }
 
@@ -112,6 +166,7 @@ class Drawer {
         var matrix = this.create_matrix()
         this.fill_matrix(matrix)
         document.getElementById('map').innerHTML = this.create_html(matrix)
+        document.getElementById('points').innerText = this.world.hero.points
     }
 }
 
@@ -122,15 +177,22 @@ class World {
         this.m = m
 
         this.hero = new Hero('Bob', 3, 4)
-        this.animals = []
+        this.animals = [
+            new Chicken(1, 6, 'Ryaba'),
+            new Chicken(6, 8)
+        ]
 
         this.round = 0
         this.drawer = new Drawer(this)
         this.setupper = new Setupper(this)
     }
 
+    get alive_animals(){
+        return this.animals.filter((creature)=>{ return creature.is_alive })
+    }
+
     all_objects(){
-        return [this.hero, ...this.animals]
+        return [this.hero, ...this.alive_animals]
     }
 
     run(){
@@ -141,15 +203,31 @@ class World {
 
     keyup(key){
         if (['w', 'a', 's', 'd'].includes(key)){
-            this.hero.move(key, this)
+            this.hero.update(key, this)
+        }
+    }
 
-            // others move
-            this.drawer.draw_html()
+    update(){
+        for (let animal of this.alive_animals){
+            animal.my_turn(world)
+        }
+        this.animals = this.alive_animals
+
+        this.spawn()
+
+        
+        this.drawer.draw_html()
+        this.round += 1
+    }
+
+    spawn(){
+        if (this.round % 10 == 0){
+            this.animals.push(new Chicken(randomNumber(0, this.n-1), randomNumber(0, this.m-1)))
         }
     }
 }
 
 
-
 var world = new World(14, 16)
+world.update()
 world.run()
